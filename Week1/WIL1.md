@@ -306,9 +306,53 @@ String getFood();
 - 디폴트 메서드는 메서드명 가장 앞에 default라고 표기해야 한다.
 
 ### 다형성
-
+- 하나의 객체가 여러 개의 자료형 타입을 가질 수 있는 것을 객체 지향 세계에서는 다형성이라고 한다.
+- 다형성을 이용하면 복잡한 형태의 분기문을 간단하게 처리할 수 있는 경우가 많다.
 
 ### 추상 클래스
+- 추상 클래스(abstract class)는 인터페이스의 역할도 하면서 클래스의 기능도 가지고 있는 자바의 ‘돌연변이’ 같은 클래스이다. 어떤 사람은 ‘추상 클래스는 인터페이스로 대체하는 것이 좋은 디자인’이라고도 얘기한다   
+작성했던 Predator 인터페이스를 다음과 같이 추상 클래스로 변경해 보자.
+```java
+abstract class Predator extends Animal {
+    abstract String getFood();
 
+    void printFood() {  // default 를 제거한다.
+        System.out.printf("my food is %s\n", getFood());
+    }
+}
+```
+- 추상 클래스를 만들려면 class 앞에 abstract를 표기해야 한다.
+- 인터페이스의 메서드와 같은 역할을 하는 메서드(여기서는 getFood 메서드)에도 abstract를 붙여야 한다.
+- abstract 메서드는 인터페이스의 메서드와 마찬가지로 구현체가 없다. 즉, abstract 클래스를 상속하는 클래스에서 해당 abstract 메서드를 구현해야만 한다.
+- Animal 클래스의 기능을 유지하기 위해 Animal 클래스를 상속했다.
+- 인터페이스의 디폴트 메서드는 더 이상 사용할 수 없으므로 default 키워드를 삭제하여 일반 메서드로 변경했다.
+- 추상 클래스는 일반 클래스와 달리 단독으로 객체를 생성할 수 없다. 반드시 추상 클래스를 상속한 실제 클래스를 통해서만 객체를 생성할 수 있다.
+- Predator 인터페이스를 이와 같이 추상 클래스로 변경하면 Predator 인터페이스를 상속했던 BarkablePredator 인터페이스는 더 이상 사용이 불가능하므로, 다음과 같이 삭제해야 한다. 그리고 Tiger, Lion 클래스도 Animal 클래스 대신 Predator 추상 클래스를 상속하도록 변경해야 한다.
+```java
+abstract class Predator extends Animal {
+    (... 생략 ...)
+}
+
+interface Barkable {
+    (... 생략 ...)
+}
+
+interface BarkablePredator extends Predator, Barkable {
+}
+
+class Animal {
+    (... 생략 ...)
+}
+
+class Tiger extends Predator implements Barkable {
+    (... 생략 ...)
+}
+
+class Lion extends Predator implements Barkable {
+    (... 생략 ...)
+}
+```
+- Predator 추상 클래스에 선언된 getFood 메서드는 Tiger, Lion 클래스에 이미 구현되어 있으므로 추가로 구현할 필요는 없다. 추상 클래스에 abstract로 선언된 메서드는 인터페이스의 메서드와 마찬가지로 반드시 구현해야 한다.
+- 추상 클래스에는 abstract 메서드 외에 실제 메서드도 사용할 수 있다. 추상 클래스에 실제 메서드를 추가하면 Tiger, Lion 등으로 만들어진 객체에서 그 메서드들을 모두 사용할 수 있게 된다. 원래 인터페이스에서 default 메서드로 사용했던 printFood가 추상 클래스의 실제 메서드에 해당된다.
 
 > [출처](https://wikidocs.net/156068)
