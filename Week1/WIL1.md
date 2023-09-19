@@ -212,7 +212,98 @@ public class Sample {
 ```
 
 ### 인터페이스
+- 클래스가 추가될 때마다 비슷한 기능의 메서드를 추가해야 하는 번거로움을 줄이기 위해 인터페이스를 사용한다.
+```java
+interface Predator {
+}
+```
+```java
+class Tiger extends Animal implements Predator {
+}
 
+class Lion extends Animal implements Predator {    
+}
+```
+이렇게 사용하면,
+```java
+class ZooKeeper {
+    void feed(Tiger tiger) {
+        System.out.println("feed apple");
+    }
+
+    void feed(Lion lion) {
+        System.out.println("feed banana");
+    }
+}
+```
+를 인터페이스를 사용하여
+```java
+class ZooKeeper {
+    void feed(Predator predator) {
+        System.out.println("feed apple");
+    }
+}
+```
+로 간단하게 줄일 수 있다.
+- 이제 어떤 육식동물 클래스가 추가되더라도 ZooKeeper는 feed 메서드를 추가할 필요가 없다. 다만 육식동물 클래스가 추가될 때마다 다음과 같이 Predator 인터페이스를 구현해야 한다.
+- 보통 중요 클래스(ZooKeeper)를 작성하는 시점에서는 클래스(Animal)의 구현체(Tiger, Lion)가 몇 개가 될지 알 수 없으므로 인터페이스(Predator)를 정의하여 인터페이스를 기준으로 메서드(feed)를 만드는 것이 효율적이다.
+
+_그런데_ 앞의 코드를 사용하면, 어떤 육식동물이 오든지 무조건 feed apple이라는 문자열을 출력한다. 이를 고치기 위해 다음과 같이 코드를 수정해보자.
+```java
+interface Predator {
+    String getFood();
+```
+인터페이스의 메서드는 메서드의 이름과 입출력에 대한 정의만 있고 그 **내용은 없어야** 한다.
+이 메서드는 인터페이스를 implements한 클래스들이 강제적으로 구현해야 하는 규칙이 된다.
+```java
+class Tiger extends Animal implements Predator {
+    public String getFood() {
+        return "apple";
+    }
+}
+
+class Lion extends Animal implements Predator {
+    public String getFood() {
+        return "banana";
+    }
+}
+```
+__인터페이스의 메서드는 항상 public으로 구현해야 한다.__
+```java
+class ZooKeeper {
+    void feed(Predator predator) {
+        System.out.println("feed "+predator.getFood());
+    }
+}
+```
+그러면 이제 원하는 대로 
+```
+feed apple
+feed banana
+```
+가 출력된다.
+- 인터페이스를 사용하면 메서드의 개수가 줄어들 뿐만 아니라 **ZooKeeper 클래스가 동물 클래스에 의존적인 클래스에서 동물 클래스와 상관없는 독립적인 클래스가 된다.**
+
+#### 상속과 인터페이스
+Predator 인터페이스 대신 Animal 클래스에 getFood 메서드를 추가하고 Tiger, Lion 등에서 getFood 메서드를 오버라이딩한 후 Zookeeper의 feed 메서드가 Predator 대신 Animal을 입력 자료형으로 사용해도 동일한 효과를 거둘 수 있다.    
+하지만 상속은 자식 클래스가 부모 클래스의 메서드를 오버라이딩하지 않고 사용할 수 있기 때문에 해당 메서드를 반드시 구현해야 한다는 **강제성**을 갖지 못한다. 그래서 상황에 맞게 상속을 사용할 것인지, 인터페이스를 사용해야 할지를 결정해야 한다.   
+인터페이스는 인터페이스의 메서드를 반드시 구현해야 하는 강제성을 갖는다는 점을 반드시 기억하자.
+
+#### 디폴트 인터페이스
+- 인터페이스의 메서드는 구현체를 가질 수 없지만 디폴트 메서드를 사용하면 실제 구현된 형태의 메서드를 가질 수 있다.   
+예를 들어 Predator 인터페이스에 다음과 같은 디폴트 메서드를 추가할 수 있다.
+```java
+interface Predator {
+String getFood();
+
+    default void printFood() {
+        System.out.printf("my food is %s\n", getFood());
+    }
+}
+```
+- 이렇게 Predator 인터페이스에 printFood 디폴트 메서드를 구현하면 Predator 인터페이스를 구현한 Tiger, Lion 등의 실제 클래스는 printFood 메서드를 구현하지 않아도 사용할 수 있다.
+- 그리고 디폴트 메서드는 오버라이딩이 가능하다. 즉, printFood 메서드를 실제 클래스에서 다르게 구현하여 사용할 수 있다.
+- 디폴트 메서드는 메서드명 가장 앞에 default라고 표기해야 한다.
 
 ### 다형성
 
