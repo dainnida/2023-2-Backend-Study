@@ -308,10 +308,112 @@ String getFood();
 ## 다형성
 - 하나의 객체가 여러 개의 자료형 타입을 가질 수 있는 것을 객체 지향 세계에서는 다형성이라고 한다.
 - 다형성을 이용하면 복잡한 형태의 분기문을 간단하게 처리할 수 있는 경우가 많다.
+```java
+class Bouncer {
+  void barkAnimal(Animal animal) {
+    if (animal instanceof Tiger) {
+        System.out.println("어흥");
+    } else if (animal instanceof Lion) {
+        System.out.println("으르렁");
+    }
+  }
+}
+```
+여기서 **instanceof**는 어떤 객체가 특정 클래스의 객체인지를 조사할 때 사용되는 자바의 내장 명령어이다. 여기서 animal instanceof Tiger는 ‘animal 객체는 Tiger 클래스로 만들어진 객체인가?’를 묻는 조건문이고, 조건이 참이라면 ‘어흥’을 출력하게 되는 것이다.    
+*하지만* 이렇게 되면 다음과 같이 동물 클래스가 추가될 때마다 분기문이 추가되어야 하므로 좋지 않다.
+```java
+class Bouncer {
+    void barkAnimal(Animal animal) {
+      if (animal instanceof Tiger) {
+            System.out.println("어흥");
+        } else if (animal instanceof Lion) {
+            System.out.println("으르렁");
+        } else if (animal instanceof Crocodile) {
+          System.out.println("쩝쩝");
+        } else if (animal instanceof Leopard) {
+          System.out.println("캬옹");
+        }
+    }
+}
+```
+불필요한 코드를 줄이기 위해 Barkable 인터페이스를 사용하여 다음과 같이 수정해보자.
+```java
+interface Predator {
+    (... 생략 ...)
+}
 
-## 추상 클래스
-- 추상 클래스(abstract class)는 인터페이스의 역할도 하면서 클래스의 기능도 가지고 있는 자바의 ‘돌연변이’ 같은 클래스이다. 어떤 사람은 ‘추상 클래스는 인터페이스로 대체하는 것이 좋은 디자인’이라고도 얘기한다   
-작성했던 Predator 인터페이스를 다음과 같이 추상 클래스로 변경해 보자.
+interface Barkable {
+    void bark();
+}
+
+class Animal {
+    (... 생략 ...)
+}
+
+class Tiger extends Animal implements Predator, Barkable {
+    public String getFood() {
+        return "apple";
+    }
+
+    public void bark() {
+        System.out.println("어흥");
+    }
+}
+
+class Lion extends Animal implements Predator, Barkable {
+    public String getFood() {
+        return "banana";
+    }
+
+    public void bark() {
+        System.out.println("으르렁");
+    }
+}
+
+class Bouncer {
+    void barkAnimal(Barkable animal) {  // Animal 대신 Barkable을 사용
+        animal.bark();
+    }
+}
+```
+- 콤마(,)를 이용하여 인터페이스를 여러 개 implements할 수 있다. *(일반클래스는 단일 상속만 가능!)*
+- 예제에서 사용한 tiger, lion 객체는 각각 Tiger, Lion 클래스의 객체이면서 Animal 클래스의 객체이기도 하고, Barkable과 Predator 인터페이스의 객체이기도 하다. 이러한 이유로 barkAnimal 메서드의 입력 자료형을 Animal에서 Barkable로 바꾸어 사용할 수 있는 것이다.
+- 이렇게 하나의 객체가 여러 개의 자료형 타입을 가질 수 있는 것을 객체 지향 세계에서는 다형성이라고 한다.
+- 그러므로 Tiger 클래스의 객체는 다음과 같이 여러 가지 자료형으로 표현할 수 있다.
+```
+Tiger tiger = new Tiger();  // Tiger is a Tiger
+Animal animal = new Tiger();  // Tiger is a Animal
+Predator predator = new Tiger();  // Tiger is a Predator
+Barkable barkable = new Tiger();  // Tiger is a Barkable
+```
+여기서 중요한 점은 Predator로 선언된 predator 객체와 Barkable로 선언된 barkable 객체는 사용할 수 있는 메서드가 서로 다르다는 점이다. predator 객체는 getFood() 메서드가 선언된 Predator 인터페이스의 객체이므로 getFood 메서드만 호출이 가능하다. 이와 마찬가지로 Barkable로 선언된 barkable 객체는 bark 메서드만 호출이 가능하다.  
+
+만약 getFood 메서드와 bark 메서드를 모두 사용하고 싶다면, Predator, Barkable 인터페이스를 구현한 Tiger로 선언된 tiger 객체를 그대로 사용하거나 다음과 같이 getFood, bark 메서드를 모두 포함하는 새로운 인터페이스를 만들어 사용하면 된다.
+```java
+interface Predator {
+    (... 생략 ...)
+}
+
+interface Barkable {
+    void bark();
+}
+
+interface BarkablePredator extends Predator, Barkable {
+}
+```
+이제 이를 반영하기 위해 앞서 작성했던 동물 클래스를 BarkablePredator 인터페이스를 사용하도록 다음과 같이 수정해보자.
+```java
+class Lion extends Animal implements BarkablePredator {
+    public String getFood() {
+        return "banana";
+    }
+
+    public void bark() {
+        System.out.println("으르렁");
+    }
+}
+```
+이를 반영해서 앞서 작성했던 Predator 인터페이스를 다음과 같이 추상 클래스로 변경해 보자.
 ```java
 abstract class Predator extends Animal {
     abstract String getFood();
@@ -321,6 +423,10 @@ abstract class Predator extends Animal {
     }
 }
 ```
+- Bouncer 클래스의 barkAnimal 메서드의 입력 자료형이 Barkable이더라도 BarkablePredator를 구현한 lion 객체를 전달할 수 있다. 그 이유는 BarkablePredator는 Barkable 인터페이스를 상속받은 자식 인터페이스이기 때문이다. *자식 인터페이스로 생성한 객체의 자료형은 부모 인터페이스로 사용하는 것이 가능하다.* 자식 클래스의 객체 자료형을 부모 클래스의 자료형으로 사용 가능하다는 점과 동일하다.
+
+## 추상 클래스
+- 추상 클래스(abstract class)는 인터페이스의 역할도 하면서 클래스의 기능도 가지고 있는 자바의 ‘돌연변이’ 같은 클래스이다. 어떤 사람은 ‘추상 클래스는 인터페이스로 대체하는 것이 좋은 디자인’이라고도 얘기한다.
 - 추상 클래스를 만들려면 class 앞에 abstract를 표기해야 한다.
 - 인터페이스의 메서드와 같은 역할을 하는 메서드(여기서는 getFood 메서드)에도 abstract를 붙여야 한다.
 - abstract 메서드는 인터페이스의 메서드와 마찬가지로 구현체가 없다. 즉, abstract 클래스를 상속하는 클래스에서 해당 abstract 메서드를 구현해야만 한다.
